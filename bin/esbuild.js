@@ -1,9 +1,10 @@
 const esbuild = require("esbuild")
+const { solidPlugin } = require("esbuild-plugin-solid")
 
 esbuild.build({
-  entryPoints: ['src/index.ts'],
+  entryPoints: ['src/index.tsx'],
   bundle: true,
   minify: true,
-  target: ['chrome58', 'firefox57', 'safari11', 'edge16'],
   outfile: 'build/static/js/index.js',
-})
+  plugins: [solidPlugin()]
+}).catch(() => process.exit(1))

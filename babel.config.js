@@ -8,7 +8,7 @@ module.exports = {
         },
       },
     ],
-    "@babel/preset-react",
+    "solid",
     "@babel/preset-typescript",
   ],
   plugins: [
