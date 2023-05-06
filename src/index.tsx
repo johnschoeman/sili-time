@@ -1,14 +1,14 @@
+import * as DayTime from "./dayTime"
 import { E, F, O, T, TE } from "./fpts"
+import * as Posix from "./posix"
 
 import * as D from "io-ts/Decoder"
-import { failure } from "io-ts/lib/PathReporter"
 import type { JSX } from "solid-js"
-import { createEffect, createSignal } from "solid-js"
+import { createSignal } from "solid-js"
 import { render } from "solid-js/web"
 
 const SUNRISE_SUNSET_API = "https://api.sunrise-sunset.org/json"
 
-type Posix = number
 type Lat = number
 type Lng = number
 type Coord = [Lat, Lng]
@@ -18,28 +18,52 @@ const showCoord = (coord: Coord): string => {
   return `Lat: ${lat} Lng: ${lng}`
 }
 
+// TimeStrings are in UTC
 type SunResponse = {
   status: "OK"
   results: {
-    sunrise: string
-    sunset: string
-    solar_noon: string
-    day_length: string
-    civil_twilight_begin: string
-    civil_twilight_end: string
-    nautical_twilight_begin: string
-    nautical_twilight_end: string
-    astronomical_twilight_begin: string
-    astronomical_twilight_end: string
+    sunrise: DayTime.TimeString
+    sunset: DayTime.TimeString
+    solar_noon: DayTime.TimeString
+    day_length: DayTime.TimeString
+    civil_twilight_begin: DayTime.TimeString
+    civil_twilight_end: DayTime.TimeString
+    nautical_twilight_begin: DayTime.TimeString
+    nautical_twilight_end: DayTime.TimeString
+    astronomical_twilight_begin: DayTime.TimeString
+    astronomical_twilight_end: DayTime.TimeString
   }
 }
 
-const showSunData = (sunData: SunResponse): string => {
+type Seconds = number
+type UTCOffset = Seconds
+
+const toSunData = (sunResponse: SunResponse, utcOffset: UTCOffset): SunData => {
   const {
     results: { sunrise, sunset },
-  } = sunData
+  } = sunResponse
 
-  return `sunrise: ${sunrise} sunset: ${sunset}`
+  const sunriseSec = DayTime.timeStringToSeconds(sunrise) - utcOffset
+  const sunsetSec = DayTime.timeStringToSeconds(sunset) - utcOffset
+
+  return {
+    sunriseSec,
+    sunsetSec,
+  }
+}
+
+type SunData = {
+  sunriseSec: Seconds
+  sunsetSec: Seconds
+}
+
+const showSunData = (sunData: SunData): string => {
+  const { sunriseSec, sunsetSec } = sunData
+  const sunriseDayTime = DayTime.fromSeconds(sunriseSec)
+  const sunsetDayTime = DayTime.fromSeconds(sunsetSec)
+  return `sunrise: ${DayTime.show(
+    sunriseDayTime,
+  )}, ${sunriseSec} sunset: ${DayTime.show(sunsetDayTime)}, ${sunsetSec}`
 }
 
 const sunResponseDecoder: D.Decoder<unknown, SunResponse> = D.struct({
@@ -93,9 +117,9 @@ const fetchSunriseSunset = (
   )
 }
 
-const [now, setNow] = createSignal<Posix>(Date.now())
+const [now, setNow] = createSignal<Posix.Posix>(Date.now())
 const [location, setLocation] = createSignal<O.Option<Coord>>(O.none)
-const [sunData, setSunData] = createSignal<O.Option<SunResponse>>(O.none)
+const [sunData, setSunData] = createSignal<O.Option<SunData>>(O.none)
 const [displayError, setDisplayError] = createSignal<O.Option<Error>>(O.none)
 
 navigator.geolocation.getCurrentPosition(
@@ -119,20 +143,33 @@ navigator.geolocation.getCurrentPosition(
         },
         res => {
           console.log("SNAKES", res)
-          return T.fromIO(() => setSunData(O.some(res)))
+          const utcOffsetSec = new Date(now()).getTimezoneOffset() * 60
+          const sunData_ = toSunData(res, utcOffsetSec)
+          return T.fromIO(() => setSunData(O.some(sunData_)))
         },
       ),
     )()
   },
 )
 
-const toDate = (posix: Posix): string => {
+const toDate = (posix: Posix.Posix): string => {
   const date = new Date(posix)
   return date.toString()
 }
 
 const showError = (error: Error): string => {
   return `${error}`
+}
+
+type DaySecond = number // number of seconds since localized midnight
+
+const toDaySecond = (posix: Posix.Posix): DaySecond => {
+    const n = new Date(posix)
+    const hour = n.getHours()
+    const minutes = n.getMinutes()
+    const seconds = n.getSeconds()
+
+    return (hour * 60 * 60) + (minutes * 60) + seconds
 }
 
 setInterval(() => {
@@ -152,13 +189,16 @@ const App = (): JSX.Element => {
       O.fold(() => "...", showSunData),
     )
 
+  const daySecondText = (): string => {
+    const daySecond = toDaySecond(now())
+
+    return String(daySecond)
+  }
+
   const displayErrorText = (): string =>
     F.pipe(
       displayError(),
-      O.fold(
-        () => "",
-        showError
-      ),
+      O.fold(() => "", showError),
     )
 
   const hasError = (): boolean =>
@@ -172,6 +212,7 @@ const App = (): JSX.Element => {
       <p>DateTime: {toDate(now())}</p>
       <p>Location: {locationText()}</p>
       <p>SunData: {sunDataText()}</p>
+      <p>DaySecond: {daySecondText()}</p>
     </div>
   )
 }
