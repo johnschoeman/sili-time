@@ -96,6 +96,7 @@ const fetchSunriseSunset = (
 const [now, setNow] = createSignal<Posix>(Date.now())
 const [location, setLocation] = createSignal<O.Option<Coord>>(O.none)
 const [sunData, setSunData] = createSignal<O.Option<SunResponse>>(O.none)
+const [displayError, setDisplayError] = createSignal<O.Option<Error>>(O.none)
 
 navigator.geolocation.getCurrentPosition(
   ({ coords: { latitude, longitude } }) => {
@@ -111,9 +112,13 @@ navigator.geolocation.getCurrentPosition(
       fetchSunriseSunset,
       TE.foldW(
         error => {
-          return T.fromIO(() => console.log(error))
+          return T.fromIO(() => {
+            console.log("PING", error)
+            setDisplayError(O.some(error))
+          })
         },
         res => {
+          console.log("SNAKES", res)
           return T.fromIO(() => setSunData(O.some(res)))
         },
       ),
@@ -124,6 +129,10 @@ navigator.geolocation.getCurrentPosition(
 const toDate = (posix: Posix): string => {
   const date = new Date(posix)
   return date.toString()
+}
+
+const showError = (error: Error): string => {
+  return `${error}`
 }
 
 setInterval(() => {
@@ -143,9 +152,22 @@ const App = (): JSX.Element => {
       O.fold(() => "...", showSunData),
     )
 
+  const displayErrorText = (): string =>
+    F.pipe(
+      displayError(),
+      O.fold(
+        () => "",
+        showError
+      ),
+    )
+
+  const hasError = (): boolean =>
+    F.pipe(displayError(), O.map(F.constTrue), O.getOrElse(F.constFalse))
+
   return (
     <div class="p-8">
       <h1 class="text-2xl font-bold">SILI TIME</h1>
+      {hasError() && <p>{displayErrorText()}</p>}
       <p>Posix: {now()}</p>
       <p>DateTime: {toDate(now())}</p>
       <p>Location: {locationText()}</p>
