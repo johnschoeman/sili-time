@@ -2,6 +2,8 @@ import * as DayTime from "./dayTime"
 import { E, F, O, T, TE } from "./fpts"
 import * as Posix from "./posix"
 
+import "./index.css"
+
 import * as D from "io-ts/Decoder"
 import type { JSX } from "solid-js"
 import { createSignal } from "solid-js"

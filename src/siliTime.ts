@@ -19,6 +19,7 @@ type DayTime = {
 export const calculateSiliTime = (now: Posix.Posix, sunrise: DayTime, sunset: DayTime): SiliTime => {
   return {
     seg: 1,
-    meg: 1
+    meg: 1,
+    sec: 1
   }
 }
