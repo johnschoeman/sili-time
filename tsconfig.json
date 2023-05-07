@@ -30,7 +30,8 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "types": ["vitest/globals"]
   },
   "include": [ "src" ]
 }
