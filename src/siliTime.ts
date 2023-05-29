@@ -1,11 +1,13 @@
 import * as DayTime from "./dayTime"
 import { A, F, S } from "./fpts"
 
+type Sight = "Light" | "Night"
 type Seg = number
 type Segen = number
 type Seget = number
 
 type SiliTime = {
+  sight: Sight
   seg: Seg
   segen: Segen
   seget: Seget
@@ -49,22 +51,42 @@ export const fromDaySeconds =
   }
 
 export const toSet = (siliTime: SiliTime): SiliSet => {
-  const { seg, segen, seget } = siliTime
+  const { sight, seg, segen, seget } = siliTime
 
-  return seg * 60 * 60 + segen * 60 + seget
+  const sightSec = sight === "Light" ? 0 : secondsInAHalfDay
+  return sightSec + seg * 60 * 60 + segen * 60 + seget
 }
 
 export const fromSet = (set: SiliSet): SiliTime => {
-  const seg: Seg = Math.floor(set / (60 * 60))
-  const segen: Segen = Math.floor((set - seg * 60 * 60) / 60)
-  const seget: Seget = set - seg * 60 * 60 - segen * 60
-  const result = { seg, segen, seget }
+  const fullSeg: Seg = Math.floor(set / (60 * 60))
+  const segen: Segen = Math.floor((set - fullSeg * 60 * 60) / 60)
+  const seget: Seget = set - fullSeg * 60 * 60 - segen * 60
+
+  const sight: Sight = fullSeg < 12 ? "Light" : "Night"
+  const seg = fullSeg % 12
+
+  const result = { sight, seg, segen, seget }
+
   return result
 }
 
+const showSight = (sight: Sight): string => {
+  switch (sight) {
+    case "Night":
+      return "N"
+    case "Light":
+      return "L"
+  }
+}
+
 export const show = (siliTime: SiliTime): string => {
-  const { seg, segen, seget } = siliTime
-  return F.pipe([seg, segen, seget], A.map(pad), A.intercalate(S.Monoid)(":"))
+  const { sight, seg, segen, seget } = siliTime
+  return F.pipe(
+    [seg, segen, seget],
+    A.map(pad),
+    A.prepend(showSight(sight)),
+    A.intercalate(S.Monoid)(":"),
+  )
 }
 
 const pad = (v: number): string => {
