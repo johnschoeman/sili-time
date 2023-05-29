@@ -64,26 +64,37 @@ const locationText = (): string =>
     O.fold(() => "...", Coord.show),
   )
 
-const siliSet = ({ sunriseSec, sunsetSec }: SunData.SunData): number => {
-  return F.pipe(
-    now(),
-    Posix.toDaySecond,
-    SiliTime.fromDaySeconds(sunriseSec, sunsetSec),
-  )
-}
-
-const legsAnHourText = ({ sunriseSec, sunsetSec }: SunData.SunData): string => {
-  const legAnHour = 1 / SiliTime.legAnHour(sunriseSec, sunsetSec)
+const legsAnHourText = (sunData_: SunData.SunData): string => {
+  const legAnHour = 1 / SiliTime.legAnHour(sunData_)
   return String(legAnHour).slice(0, 4)
 }
 
-const negsAnHourText = ({ sunriseSec, sunsetSec }: SunData.SunData): string => {
-  const negAnHour = 1 / SiliTime.negAnHour(sunriseSec, sunsetSec)
+const negsAnHourText = (sunData_: SunData.SunData): string => {
+  const negAnHour = 1 / SiliTime.negAnHour(sunData_)
   return String(negAnHour).slice(0, 4)
 }
 
+const siliTime = (sunData_: SunData.SunData): SiliTime.SiliTime => {
+  return F.pipe(
+    now(),
+    Posix.toDaySecond,
+    SiliTime.fromDaySeconds(sunData_),
+    SiliTime.fromSet,
+  )
+}
+
 const siliTimeText = (sunData_: SunData.SunData): string => {
-  return F.pipe(sunData_, siliSet, SiliTime.fromSet, SiliTime.show)
+  return F.pipe(sunData_, siliTime, SiliTime.show)
+}
+
+const percentCompletedText = (sunData_: SunData.SunData): string => {
+  return F.pipe(
+    sunData_,
+    siliTime,
+    SiliTime.percentCompleted,
+    c => String(c * 100).slice(0, 4),
+    v => `${v}%`,
+  )
 }
 
 const displayErrorText = (): string =>
@@ -115,7 +126,7 @@ const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
   return (
     <>
       <h1 class="text-2xl font-bold mb-2">
-        SILI TIME • {siliTimeText(sunData_)}
+        SILI TIME • {siliTimeText(sunData_)} • {percentCompletedText(sunData_)}
       </h1>
       {hasError() && <p>{displayErrorText()}</p>}
 

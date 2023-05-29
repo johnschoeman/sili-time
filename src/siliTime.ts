@@ -1,12 +1,13 @@
 import * as DayTime from "./dayTime"
 import { A, F, S } from "./fpts"
+import * as SunData from "./sunData"
 
 type Sight = "Light" | "Night"
 type Seg = number
 type Segen = number
 type Seget = number
 
-type SiliTime = {
+export type SiliTime = {
   sight: Sight
   seg: Seg
   segen: Segen
@@ -24,7 +25,7 @@ const lightDurationSSet = sunsetSSet - sunriseSSec
 const nightDurationSSet = secondsInADay - lightDurationSSet
 
 export const fromDaySeconds =
-  (sunriseDSec: DayTime.DaySeconds, sunsetDSec: DayTime.DaySeconds) =>
+  ({ sunriseSec: sunriseDSec, sunsetSec: sunsetDSec }: SunData.SunData) =>
   (daySec: DayTime.DaySeconds): SiliSet => {
     const lightDurationDSec = sunsetDSec - sunriseDSec
     const nightDurationDSec = secondsInADay - lightDurationDSec
@@ -93,23 +94,34 @@ const pad = (v: number): string => {
   return String(v).padStart(2, "0")
 }
 
-export const legAnHour = (
-  sunriseDSec: DayTime.DaySeconds,
-  sunsetDSec: DayTime.DaySeconds,
-): number => {
-  const lightDurationDSec = sunsetDSec - sunriseDSec
+export const legAnHour = ({
+  sunriseSec,
+  sunsetSec,
+}: SunData.SunData): number => {
+  const lightDurationDSec = sunsetSec - sunriseSec
   const ratioL = lightDurationSSet / lightDurationDSec
   return ratioL
 }
 
-export const negAnHour = (
-  sunriseDSec: DayTime.DaySeconds,
-  sunsetDSec: DayTime.DaySeconds,
-): number => {
-  const lightDurationDSec = sunsetDSec - sunriseDSec
+export const negAnHour = ({
+  sunriseSec,
+  sunsetSec,
+}: SunData.SunData): number => {
+  const lightDurationDSec = sunsetSec - sunriseSec
   const nightDurationDSec = secondsInADay - lightDurationDSec
 
   const ratioN = nightDurationSSet / nightDurationDSec
 
   return ratioN
+}
+
+const mod =
+  (n: number) =>
+  (d: number): number => {
+    return ((n % d) + d) % d
+  }
+
+export const percentCompleted = (siliTime: SiliTime): number => {
+  const set = mod(toSet(siliTime))(secondsInAHalfDay)
+  return set / secondsInAHalfDay
 }
