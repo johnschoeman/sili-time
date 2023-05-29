@@ -9,7 +9,7 @@ export default defineConfig({
   },
   test: {
     exclude: ["node_modules", "**/*.config.*", "build"],
-    watchExclude: ["node_modules", "build"]
+    watchExclude: ["node_modules", "build"],
   },
-  plugins: [solidPlugin()]
+  plugins: [solidPlugin()],
 })

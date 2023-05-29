@@ -1,6 +1,7 @@
 import * as DayTime from "./dayTime"
 import { E, F, O, T, TE } from "./fpts"
 import * as Posix from "./posix"
+import * as SiliTime from "./siliTime"
 
 import "./index.css"
 
@@ -10,6 +11,7 @@ import { createSignal } from "solid-js"
 import { render } from "solid-js/web"
 
 const SUNRISE_SUNSET_API = "https://api.sunrise-sunset.org/json"
+const POLL_INTERVAL = 100
 
 type Lat = number
 type Lng = number
@@ -17,36 +19,44 @@ type Coord = [Lat, Lng]
 
 const showCoord = (coord: Coord): string => {
   const [lat, lng] = coord
-  return `Lat: ${lat} Lng: ${lng}`
+  const latText = String(lat).slice(0, 7)
+  const lngText = String(lng).slice(0, 7)
+  return `Lat: ${latText} Lng: ${lngText}`
 }
 
 // TimeStrings are in UTC
 type SunResponse = {
   status: "OK"
   results: {
-    sunrise: DayTime.TimeString
-    sunset: DayTime.TimeString
-    solar_noon: DayTime.TimeString
-    day_length: DayTime.TimeString
-    civil_twilight_begin: DayTime.TimeString
-    civil_twilight_end: DayTime.TimeString
-    nautical_twilight_begin: DayTime.TimeString
-    nautical_twilight_end: DayTime.TimeString
-    astronomical_twilight_begin: DayTime.TimeString
-    astronomical_twilight_end: DayTime.TimeString
+    sunrise: DayTime.DayTimeString
+    sunset: DayTime.DayTimeString
+    solar_noon: DayTime.DayTimeString
+    day_length: DayTime.DayTimeString
+    civil_twilight_begin: DayTime.DayTimeString
+    civil_twilight_end: DayTime.DayTimeString
+    nautical_twilight_begin: DayTime.DayTimeString
+    nautical_twilight_end: DayTime.DayTimeString
+    astronomical_twilight_begin: DayTime.DayTimeString
+    astronomical_twilight_end: DayTime.DayTimeString
   }
 }
 
 type Seconds = number
 type UTCOffset = Seconds
 
+const secondsInADay = 24 * 60 * 60
+
 const toSunData = (sunResponse: SunResponse, utcOffset: UTCOffset): SunData => {
   const {
     results: { sunrise, sunset },
   } = sunResponse
 
-  const sunriseSec = DayTime.timeStringToSeconds(sunrise) - utcOffset
-  const sunsetSec = DayTime.timeStringToSeconds(sunset) - utcOffset
+  const sunriseSec = mod(DayTime.dayTimeStringToSeconds(sunrise) - utcOffset)(
+    secondsInADay,
+  )
+  const sunsetSec = mod(DayTime.dayTimeStringToSeconds(sunset) - utcOffset)(
+    secondsInADay,
+  )
 
   return {
     sunriseSec,
@@ -54,18 +64,29 @@ const toSunData = (sunResponse: SunResponse, utcOffset: UTCOffset): SunData => {
   }
 }
 
+const mod =
+  (n: number) =>
+  (d: number): number => {
+    return ((n % d) + d) % d
+  }
+
 type SunData = {
   sunriseSec: Seconds
   sunsetSec: Seconds
+}
+
+const defaultSunData: SunData = {
+  sunriseSec: 21600,
+  sunsetSec: 43200 + 28600,
 }
 
 const showSunData = (sunData: SunData): string => {
   const { sunriseSec, sunsetSec } = sunData
   const sunriseDayTime = DayTime.fromSeconds(sunriseSec)
   const sunsetDayTime = DayTime.fromSeconds(sunsetSec)
-  return `sunrise: ${DayTime.show(
-    sunriseDayTime,
-  )}, ${sunriseSec} sunset: ${DayTime.show(sunsetDayTime)}, ${sunsetSec}`
+  return `sunrise: ${DayTime.show(sunriseDayTime)} sunset: ${DayTime.show(
+    sunsetDayTime,
+  )}`
 }
 
 const sunResponseDecoder: D.Decoder<unknown, SunResponse> = D.struct({
@@ -144,7 +165,6 @@ navigator.geolocation.getCurrentPosition(
           })
         },
         res => {
-          console.log("SNAKES", res)
           const utcOffsetSec = new Date(now()).getTimezoneOffset() * 60
           const sunData_ = toSunData(res, utcOffsetSec)
           return T.fromIO(() => setSunData(O.some(sunData_)))
@@ -156,7 +176,13 @@ navigator.geolocation.getCurrentPosition(
 
 const toDate = (posix: Posix.Posix): string => {
   const date = new Date(posix)
-  return date.toString()
+  const options: Intl.DateTimeFormatOptions = {
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: false,
+  }
+  return new Intl.DateTimeFormat("en-US", options).format(date)
 }
 
 const showError = (error: Error): string => {
@@ -166,19 +192,22 @@ const showError = (error: Error): string => {
 type DaySecond = number // number of seconds since localized midnight
 
 const toDaySecond = (posix: Posix.Posix): DaySecond => {
-    const n = new Date(posix)
-    const hour = n.getHours()
-    const minutes = n.getMinutes()
-    const seconds = n.getSeconds()
+  const n = new Date(posix)
+  const hour = n.getHours()
+  const minutes = n.getMinutes()
+  const seconds = n.getSeconds()
 
-    return (hour * 60 * 60) + (minutes * 60) + seconds
+  return hour * 60 * 60 + minutes * 60 + seconds
 }
 
 setInterval(() => {
   setNow(Date.now())
-}, 1000)
+}, POLL_INTERVAL)
 
 const App = (): JSX.Element => {
+  const nowText = (): string => {
+    return F.pipe(now(), now_ => String(now_).slice(0, 10))
+  }
   const locationText = (): string =>
     F.pipe(
       location(),
@@ -188,13 +217,44 @@ const App = (): JSX.Element => {
   const sunDataText = (): string =>
     F.pipe(
       sunData(),
-      O.fold(() => "...", showSunData),
+      O.getOrElse(() => defaultSunData),
+      showSunData,
     )
 
-  const daySecondText = (): string => {
+  const siliSet = (): number => {
     const daySecond = toDaySecond(now())
+    const { sunriseSec, sunsetSec } = F.pipe(
+      sunData(),
+      O.getOrElse(() => defaultSunData),
+    )
 
-    return String(daySecond)
+    const siliTime = SiliTime.fromDaySeconds(sunriseSec, sunsetSec)(daySecond)
+    return siliTime
+  }
+
+  const legsAnHourText = (): string => {
+    const { sunriseSec, sunsetSec } = F.pipe(
+      sunData(),
+      O.getOrElse(() => defaultSunData),
+    )
+
+    const legAnHour = 1 / SiliTime.legAnHour(sunriseSec, sunsetSec)
+    return String(legAnHour).slice(0, 4)
+  }
+
+  const negsAnHourText = (): string => {
+    const { sunriseSec, sunsetSec } = F.pipe(
+      sunData(),
+      O.getOrElse(() => defaultSunData),
+    )
+
+    const negAnHour = 1 / SiliTime.negAnHour(sunriseSec, sunsetSec)
+    return String(negAnHour).slice(0, 4)
+  }
+
+  const siliTimeText = (): string => {
+    const siliTime = SiliTime.fromSet(siliSet())
+    return SiliTime.show(siliTime)
   }
 
   const displayErrorText = (): string =>
@@ -207,14 +267,25 @@ const App = (): JSX.Element => {
     F.pipe(displayError(), O.map(F.constTrue), O.getOrElse(F.constFalse))
 
   return (
-    <div class="p-8">
-      <h1 class="text-2xl font-bold">SILI TIME</h1>
+    <div class="p-8 space-y-4">
+      <h1 class="text-2xl font-bold mb-2">SILI TIME • {siliTimeText()}</h1>
       {hasError() && <p>{displayErrorText()}</p>}
-      <p>Posix: {now()}</p>
-      <p>DateTime: {toDate(now())}</p>
-      <p>Location: {locationText()}</p>
-      <p>SunData: {sunDataText()}</p>
-      <p>DaySecond: {daySecondText()}</p>
+      <div>
+        <p>Date Time • {toDate(now())}</p>
+      </div>
+
+      <p>Posix: {nowText()}</p>
+
+      <div>
+        <h2>Location</h2>
+        <p>{locationText()}</p>
+        <p>{sunDataText()}</p>
+      </div>
+
+      <div>
+        <p>hours in a Leg: {legsAnHourText()}</p>
+        <p>hours in a Neg: {negsAnHourText()}</p>
+      </div>
     </div>
   )
 }
