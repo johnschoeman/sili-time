@@ -37,7 +37,7 @@ export const toSunData = (
   utcOffset: UTCOffset,
 ): SunData => {
   const {
-    results: { sunrise, sunset },
+    results: { civil_twilight_begin: sunrise, civil_twilight_end: sunset },
   } = sunResponse
 
   const sunriseSec = mod(DayTime.dayTimeStringToSeconds(sunrise) - utcOffset)(

@@ -21,11 +21,8 @@ navigator.geolocation.getCurrentPosition(
     const coord: Coord.Coord = [latitude, longitude]
 
     setLocation(() => {
-      console.log(coord)
       return O.some(coord)
     })
-
-    await new Promise(r => setTimeout(r, 2000))
 
     void F.pipe(
       coord,
@@ -39,6 +36,7 @@ navigator.geolocation.getCurrentPosition(
         },
         res => {
           const utcOffsetSec = new Date(now()).getTimezoneOffset() * 60
+          console.log(res)
           const sunData_ = SunData.toSunData(res, utcOffsetSec)
           return T.fromIO(() => setSunData(O.some(sunData_)))
         },
