@@ -33,16 +33,20 @@ import { describe, it } from "vitest"
 describe("SiliTime.fromDaySeconds", () => {
   describe("when give a sunrise, sunset, and daySecond", () => {
     it("returns the S.I.L.I. time", () => {
-      const sunrise: DayTime.DaySeconds = DayTime.toSeconds({
+      const sunriseSec: DayTime.DaySeconds = DayTime.toSeconds({
         hour: 5,
         minute: 31,
         second: 10,
       })
-      const sunset: DayTime.DaySeconds = DayTime.toSeconds({
+      const sunsetSec: DayTime.DaySeconds = DayTime.toSeconds({
         hour: 19,
         minute: 51,
         second: 40,
       })
+      const sunData = {
+        sunriseSec,
+        sunsetSec
+      }
 
       // dawn
       const secondA: DayTime.DaySeconds = DayTime.toSeconds({
@@ -108,11 +112,11 @@ describe("SiliTime.fromDaySeconds", () => {
         seget: 0,
       })
 
-      const resultA = SiliTime.fromDaySeconds(sunrise, sunset)(secondA)
-      const resultB = SiliTime.fromDaySeconds(sunrise, sunset)(secondB)
-      const resultC = SiliTime.fromDaySeconds(sunrise, sunset)(secondC)
-      const resultD = SiliTime.fromDaySeconds(sunrise, sunset)(secondD)
-      const resultE = SiliTime.fromDaySeconds(sunrise, sunset)(secondE)
+      const resultA = SiliTime.fromDaySeconds(sunData)(secondA)
+      const resultB = SiliTime.fromDaySeconds(sunData)(secondB)
+      const resultC = SiliTime.fromDaySeconds(sunData)(secondC)
+      const resultD = SiliTime.fromDaySeconds(sunData)(secondD)
+      const resultE = SiliTime.fromDaySeconds(sunData)(secondE)
 
       expect(resultA).toStrictEqual(expectedA)
       expect(resultB).toStrictEqual(expectedB)
