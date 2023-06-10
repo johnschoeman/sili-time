@@ -11,15 +11,4 @@ module.exports = {
     "solid",
     "@babel/preset-typescript",
   ],
-  plugins: [
-    [
-      "module-resolver",
-      {
-        alias: {
-          root: "./src",
-          "@app": "./src",
-        },
-      },
-    ],
-  ],
 }

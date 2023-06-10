@@ -1,6 +1,7 @@
+import { E, F, TE } from "../fpts"
+
 import * as Coord from "./coord"
 import * as DayTime from "./dayTime"
-import { E, F, TE } from "./fpts"
 
 import * as D from "io-ts/Decoder"
 
