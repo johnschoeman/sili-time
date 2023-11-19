@@ -1,4 +1,4 @@
-import { S } from "../fpts"
+import { String } from "effect"
 
 // DaySeconds
 // number of seconds since localized midnight
@@ -42,7 +42,7 @@ export const dayTimeStringToSeconds = (
   timeString: DayTimeString,
 ): DaySeconds => {
   const regex = new RegExp(/:| /)
-  const [hour, minute, second, meridian] = S.split(regex)(timeString)
+  const [hour, minute, second, meridian] = String.split(regex)(timeString)
 
   const milHour = militaryHour(meridian as Meridian, hour as DayHour)
 
@@ -111,7 +111,7 @@ const militaryHour = (meridian: "AM" | "PM", hour: DayHour): MilitaryHour => {
         case "12":
           return "12"
         default:
-          return String(Number(hour) + 12) as MilitaryHour
+          return `${Number(hour) + 12}` as MilitaryHour
       }
   }
 }
