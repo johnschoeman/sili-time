@@ -1,5 +1,6 @@
+import { A, F, S } from "../fpts"
+
 import * as DayTime from "./dayTime"
-import { A, F, S } from "./fpts"
 import * as SunData from "./sunData"
 
 type Sight = "Light" | "Night"

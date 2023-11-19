@@ -45,7 +45,7 @@ describe("SiliTime.fromDaySeconds", () => {
       })
       const sunData = {
         sunriseSec,
-        sunsetSec
+        sunsetSec,
       }
 
       // dawn

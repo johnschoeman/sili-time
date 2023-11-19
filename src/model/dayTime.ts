@@ -1,4 +1,4 @@
-import { S } from "./fpts"
+import { S } from "../fpts"
 
 // DaySeconds
 // number of seconds since localized midnight
