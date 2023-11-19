@@ -47,7 +47,7 @@ const _report = (state: string): void => {
   console.log(`Permission ${state}`)
 }
 
-const getLocation = async (): Promise<void> => {
+const getLocation: Effect.Effect<never, never, void> = async () => {
   navigator.geolocation.getCurrentPosition(
     async ({ coords: { latitude, longitude } }) => {
       const coord: Coord.Coord = [latitude, longitude]
@@ -56,7 +56,7 @@ const getLocation = async (): Promise<void> => {
         return Option.some(coord)
       })
 
-      void pipe(
+      return pipe(
         coord,
         SunData.fetchSunriseSunset,
         Effect.matchEffect({
@@ -77,7 +77,7 @@ const getLocation = async (): Promise<void> => {
 }
 
 //void handlePermission()
-void getLocation()
+Effect.runSync(getLocation)
 
 const showError = (error: Error | ParseResult.ParseError): string => {
   return `${error}`
