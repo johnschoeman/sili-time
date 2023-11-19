@@ -76,7 +76,7 @@ const getLocation: Effect.Effect<never, never, void> = async () => {
   )
 }
 
-//void handlePermission()
+// void handlePermission()
 Effect.runSync(getLocation)
 
 const showError = (error: Error | ParseResult.ParseError): string => {
