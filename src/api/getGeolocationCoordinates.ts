@@ -17,7 +17,7 @@ type APIGeolocationPosition = {
   timestamp: number
 }
 
-export const getGeolocation = Effect.async<
+export const getGeolocationCoordinates = Effect.async<
   never,
   GeolocationPositionError | Error,
   GeolocationCoordinates.GeolocationCoordinates

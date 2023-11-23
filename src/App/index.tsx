@@ -1,4 +1,5 @@
-import { Coord, Posix, SiliTime, SunData } from "@app/model"
+import * as API from "@app/api"
+import { GeolocationCoordinates, Posix, SiliTime } from "@app/model"
 
 import { ParseResult } from "@effect/schema"
 import { Effect, Option, pipe } from "effect"
@@ -10,9 +11,9 @@ const [now, setNow] = createSignal<Posix.Posix>(Date.now())
 const [locationPermission, setLocationPermission] = createSignal<
   Option.Option<PermissionState>
 >(Option.none())
-const [location, setLocation] = createSignal<Option.Option<Coord.Coord>>(
-  Option.none(),
-)
+const [geolocationCoordinates, setGeolocationCoordinates] = createSignal<
+  Option.Option<GeolocationCoordinates.GeolocationCoordinates>
+>(Option.none())
 const [sunData, setSunData] = createSignal<Option.Option<SunData.SunData>>(
   Option.none(),
 )
@@ -50,6 +51,16 @@ const _report = (state: string): void => {
 const showError = (error: Error | ParseResult.ParseError): string => {
   return `${error}`
 }
+
+Effect.runSync(
+  pipe(
+    API.getGeolocationCoordinates,
+    Effect.match({
+      onSuccess: coords => setGeolocationCoordinates(Option.some(coords)),
+      onFailure: () => {},
+    }),
+  ),
+)
 
 setInterval(() => {
   setNow(Date.now())
