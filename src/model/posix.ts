@@ -1,8 +1,12 @@
+import * as DaySeconds from "./daySeconds"
+
+// Posix
+//
+// number of milliseconds since 1970-01-01T00:00:00Z
+
 export type Posix = number
 
-type DaySecond = number // number of seconds since localized midnight
-
-export const toDaySecond = (posix: Posix): DaySecond => {
+export const toDaySecond = (posix: Posix): DaySeconds.DaySeconds => {
   const n = new Date(posix)
   const hour = n.getHours()
   const minutes = n.getMinutes()

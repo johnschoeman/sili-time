@@ -1,7 +1,9 @@
-import * as DayTime from "./dayTime"
-import * as SunData from "./sunData"
+import * as DaySeconds from "./daySeconds"
+import * as SunriseSunset from "./sunriseSunset"
 
-import {pipe, ReadonlyArray } from "effect"
+import { pipe, ReadonlyArray } from "effect"
+
+// SILITime
 
 type Sight = "Light" | "Night"
 type Seg = number
@@ -26,8 +28,8 @@ const lightDurationSSet = sunsetSSet - sunriseSSec
 const nightDurationSSet = secondsInADay - lightDurationSSet
 
 export const fromDaySeconds =
-  ({ sunriseSec: sunriseDSec, sunsetSec: sunsetDSec }: SunData.SunData) =>
-  (daySec: DayTime.DaySeconds): SiliSet => {
+  ({ sunriseSec: sunriseDSec, sunsetSec: sunsetDSec }: SunriseSunset.SunriseSunset) =>
+  (daySec: DaySeconds.DaySeconds): SiliSet => {
     const lightDurationDSec = sunsetDSec - sunriseDSec
     const nightDurationDSec = secondsInADay - lightDurationDSec
 
@@ -98,7 +100,7 @@ const pad = (v: number): string => {
 export const legAnHour = ({
   sunriseSec,
   sunsetSec,
-}: SunData.SunData): number => {
+}: SunriseSunset.SunriseSunset): number => {
   const lightDurationDSec = sunsetSec - sunriseSec
   const ratioL = lightDurationSSet / lightDurationDSec
   return ratioL
@@ -107,7 +109,7 @@ export const legAnHour = ({
 export const negAnHour = ({
   sunriseSec,
   sunsetSec,
-}: SunData.SunData): number => {
+}: SunriseSunset.SunriseSunset): number => {
   const lightDurationDSec = sunsetSec - sunriseSec
   const nightDurationDSec = secondsInADay - lightDurationDSec
 
@@ -126,3 +128,16 @@ export const percentCompleted = (siliTime: SiliTime): number => {
   const set = mod(toSet(siliTime))(secondsInAHalfDay)
   return set / secondsInAHalfDay
 }
+
+// Auge (first light)
+// Anatole (sunrise)
+// Mousike (morning hour of music and study)
+// Gymnastike (morning hour of exercise)
+// Nymphe (morning hour of ablutions)
+// Mesembria (noon)
+// Sponde (libations poured after lunch)
+// Elete (prayer)
+// Akte (eating and pleasure)
+// Hesperis (start of evening)
+// Dysis (sunset)
+// Arktos (night sky)

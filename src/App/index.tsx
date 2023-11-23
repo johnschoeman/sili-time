@@ -47,38 +47,6 @@ const _report = (state: string): void => {
   console.log(`Permission ${state}`)
 }
 
-const getLocation: Effect.Effect<never, never, void> = async () => {
-  navigator.geolocation.getCurrentPosition(
-    async ({ coords: { latitude, longitude } }) => {
-      const coord: Coord.Coord = [latitude, longitude]
-
-      setLocation(() => {
-        return Option.some(coord)
-      })
-
-      return pipe(
-        coord,
-        SunData.fetchSunriseSunset,
-        Effect.matchEffect({
-          onFailure: error => {
-            console.log("PING", error)
-            return Effect.sync(() => setDisplayError(Option.some(error)))
-          },
-          onSuccess: res => {
-            const utcOffsetSec = new Date(now()).getTimezoneOffset() * 60
-            console.log(res)
-            const sunData_ = SunData.toSunData(res, utcOffsetSec)
-            return Effect.sync(() => setSunData(Option.some(sunData_)))
-          },
-        }),
-      )
-    },
-  )
-}
-
-// void handlePermission()
-Effect.runSync(getLocation)
-
 const showError = (error: Error | ParseResult.ParseError): string => {
   return `${error}`
 }

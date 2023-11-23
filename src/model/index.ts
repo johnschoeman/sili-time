@@ -1,7 +1,15 @@
-import * as Coord from "./coord"
+import * as DaySeconds from "./daySeconds"
 import * as DayTime from "./dayTime"
+import * as GeolocationCoordinates from "./geolocationCoordinates"
 import * as Posix from "./posix"
 import * as SiliTime from "./siliTime"
-import * as SunData from "./sunData"
+import * as SunriseSunset from "./sunriseSunset"
 
-export { Coord, DayTime, Posix, SiliTime, SunData }
+export {
+  DaySeconds,
+  DayTime,
+  GeolocationCoordinates,
+  Posix,
+  SiliTime,
+  SunriseSunset,
+}

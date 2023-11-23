@@ -1,17 +1,17 @@
+import * as DaySeconds from "./daySeconds"
+
 import { String } from "effect"
 
-// DaySeconds
-// number of seconds since localized midnight
-
-export type DaySeconds = number
-
 // DayTime
+//
 // hours and minutes and seconds since localized midnight in latin numeric
+//
+// 0:0:0 is midnight
 
 export type DayTime = {
   hour: number // 0 - 23
   minute: number // 0 - 59
-  second: DaySeconds // 0 - 59
+  second: number // 0 - 59
 }
 
 export const show = (dayTime: DayTime): string => {
@@ -19,18 +19,8 @@ export const show = (dayTime: DayTime): string => {
   return `${hour}:${minute}:${second}`
 }
 
-export const fromSeconds = (seconds: DaySeconds): DayTime => {
-  const hour = Math.floor(seconds / (60 * 60))
-  const minute = Math.floor((seconds - hour * 60 * 60) / 60)
-  const second: DaySeconds = seconds - hour * 60 * 60 - minute * 60
-  return {
-    hour,
-    minute,
-    second,
-  }
-}
 
-export const toSeconds = ({ hour, minute, second }: DayTime): DaySeconds => {
+export const toSeconds = ({ hour, minute, second }: DayTime): DaySeconds.DaySeconds => {
   const hNum = Number(hour) * 60 * 60
   const mNum = Number(minute) * 60
   const sNum = Number(second)
@@ -38,9 +28,10 @@ export const toSeconds = ({ hour, minute, second }: DayTime): DaySeconds => {
 }
 
 export type DayTimeString = string // 9:31:24 AM, 11:27:01 PM, etc
+
 export const dayTimeStringToSeconds = (
   timeString: DayTimeString,
-): DaySeconds => {
+): DaySeconds.DaySeconds => {
   const regex = new RegExp(/:| /)
   const [hour, minute, second, meridian] = String.split(regex)(timeString)
 
