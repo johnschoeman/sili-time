@@ -97,6 +97,7 @@ export const fetchSunriseSunset = ({
           method: "GET",
         })
         const data = (await result.json()) as unknown
+        console.log("got sunriseSunset data:", data)
         return data
       },
       catch: reason => new Error(`${reason}`),

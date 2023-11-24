@@ -1,5 +1,10 @@
 import * as API from "@app/api"
-import { GeolocationCoordinates, Posix, SiliTime } from "@app/model"
+import {
+  GeolocationCoordinates,
+  Posix,
+  SiliTime,
+  SunriseSunset,
+} from "@app/model"
 
 import { ParseResult } from "@effect/schema"
 import { Effect, Option, pipe } from "effect"
@@ -8,27 +13,29 @@ import { createSignal, JSX } from "solid-js"
 const POLL_INTERVAL = 100
 
 const [now, setNow] = createSignal<Posix.Posix>(Date.now())
-const [locationPermission, setLocationPermission] = createSignal<
-  Option.Option<PermissionState>
->(Option.none())
+// const [locationPermission, setLocationPermission] = createSignal< Option.Option<PermissionState> >(Option.none())
 const [geolocationCoordinates, setGeolocationCoordinates] = createSignal<
   Option.Option<GeolocationCoordinates.GeolocationCoordinates>
 >(Option.none())
-const [sunData, setSunData] = createSignal<Option.Option<SunData.SunData>>(
-  Option.none(),
-)
+const [sunriseSunset, setSunriseSunset] = createSignal<
+  Option.Option<SunriseSunset.SunriseSunset>
+>(Option.none())
 const [displayError, setDisplayError] = createSignal<
   Option.Option<Error | ParseResult.ParseError>
 >(Option.none())
 
-const _pemissionStatusTask = async (): Promise<PermissionStatus> => {
-  try {
-    const state = await navigator.permissions.query({ name: "geolocation" })
-    return state
-  } catch (err) {
-    return "denied" as unknown as PermissionStatus
-  }
-}
+//const _pemissionStatusTask = async (): Promise<PermissionStatus> => {
+// try {
+//   const state = await navigator.permissions.query({ name: "geolocation" })
+//   return state
+// } catch (err) {
+//   return "denied" as unknown as PermissionStatus
+// }
+//}
+
+//void _pemissionStatusTask().then(result => {
+// console.log("Permission", result)
+//})
 
 //  setLocationPermission(Option.some(result.state))
 //  switch (result.state) {
@@ -52,15 +59,32 @@ const showError = (error: Error | ParseResult.ParseError): string => {
   return `${error}`
 }
 
-Effect.runSync(
-  pipe(
-    API.getGeolocationCoordinates,
-    Effect.match({
-      onSuccess: coords => setGeolocationCoordinates(Option.some(coords)),
-      onFailure: () => {},
-    }),
-  ),
+console.log("Start")
+
+void pipe(
+  geolocationCoordinates(),
+  Option.match({
+    onNone: () => Effect.succeed(Option.none()),
+    onSome: async geolocationCoordinations => {
+      return Effect.runPromise(
+        API.fetchSunriseSunset(geolocationCoordinations),
+      ).then(setSunriseSunset)
+    },
+  }),
 )
+
+//` Option.match({
+//`   onNone: () => Effect.succeed(Option.none()),
+//`   onSome: geolocationCoordinations =>
+//`     Effect.runPromise(
+//`       API.fetchSunriseSunset(geolocationCoordinations),
+//`       Effect.match({
+//`         onSuccess: sunriseSunset_ => setSunriseSunset(Option.some(sunriseSunset_)),
+//`         onFailure: () => {},
+//`       }),
+//`   )
+
+console.log("End")
 
 setInterval(() => {
   setNow(Date.now())
@@ -71,24 +95,24 @@ const nowText = (): string => {
 }
 const locationText = (): string =>
   pipe(
-    location(),
+    geolocationCoordinates(),
     Option.match({
       onNone: () => "...",
-      onSome: Coord.show,
+      onSome: GeolocationCoordinates.show,
     }),
   )
 
-const legsAnHourText = (sunData_: SunData.SunData): string => {
+const legsAnHourText = (sunData_: SunriseSunset.SunriseSunset): string => {
   const legAnHour = 1 / SiliTime.legAnHour(sunData_)
   return String(legAnHour).slice(0, 4)
 }
 
-const negsAnHourText = (sunData_: SunData.SunData): string => {
+const negsAnHourText = (sunData_: SunriseSunset.SunriseSunset): string => {
   const negAnHour = 1 / SiliTime.negAnHour(sunData_)
   return String(negAnHour).slice(0, 4)
 }
 
-const siliTime = (sunData_: SunData.SunData): SiliTime.SiliTime => {
+const siliTime = (sunData_: SunriseSunset.SunriseSunset): SiliTime.SiliTime => {
   return pipe(
     now(),
     Posix.toDaySecond,
@@ -97,11 +121,13 @@ const siliTime = (sunData_: SunData.SunData): SiliTime.SiliTime => {
   )
 }
 
-const siliTimeText = (sunData_: SunData.SunData): string => {
+const siliTimeText = (sunData_: SunriseSunset.SunriseSunset): string => {
   return pipe(sunData_, siliTime, SiliTime.show)
 }
 
-const percentCompletedText = (sunData_: SunData.SunData): string => {
+const percentCompletedText = (
+  sunData_: SunriseSunset.SunriseSunset,
+): string => {
   return pipe(
     sunData_,
     siliTime,
@@ -129,7 +155,7 @@ const hasError = (): boolean =>
     }),
   )
 
-type SiliTimeFooProps = SunData.SunData
+type SiliTimeFooProps = SunriseSunset.SunriseSunset
 const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
   return (
     <>
@@ -141,7 +167,7 @@ const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
       <div>
         <h2>Location</h2>
         <p>{locationText()}</p>
-        <p>{SunData.show(sunData_)}</p>
+        <p>{SunriseSunset.show(sunData_)}</p>
       </div>
 
       <div>
@@ -155,8 +181,10 @@ const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
 const App = (): JSX.Element => {
   return (
     <div class="p-8 space-y-4">
+      <input onChange={e => console.log(e)} />
+      <input onChange={e => console.log(e)} />
       {pipe(
-        sunData(),
+        sunriseSunset(),
         Option.match({
           onNone: () => <p>Loading</p>,
           onSome: SiliTimeFoo,
