@@ -178,10 +178,15 @@ const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
   )
 }
 
+const [latitude, setLatitude] = createSignal<string>("")
+
 const App = (): JSX.Element => {
+  const handleOnChangeLatitude = (e: Event): void => {
+    setLatitude((e.target as HTMLInputElement).value)
+  }
   return (
     <div class="p-8 space-y-4">
-      <input onChange={e => console.log(e)} />
+      <input onChange={handleOnChangeLatitude} />
       <input onChange={e => console.log(e)} />
       {pipe(
         sunriseSunset(),
