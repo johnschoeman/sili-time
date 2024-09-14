@@ -1,15 +1,15 @@
 import App from "./App"
-import { F, O } from "./fpts"
 
 import "./index.css"
 
+import { Option, pipe } from "effect"
 import { render } from "solid-js/web"
 
-F.pipe(
+pipe(
   document.getElementById("app"),
-  O.fromNullable,
-  O.fold(
-    () => {},
-    r => render(() => <App />, r),
-  ),
+  Option.fromNullable,
+  Option.match({
+    onNone: () => {},
+    onSome: r => render(() => <App />, r),
+  }),
 )

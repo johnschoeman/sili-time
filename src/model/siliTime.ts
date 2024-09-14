@@ -1,7 +1,7 @@
-import { A, F, S } from "../fpts"
-
 import * as DayTime from "./dayTime"
 import * as SunData from "./sunData"
+
+import { Array, pipe } from "effect"
 
 type Sight = "Light" | "Night"
 type Seg = number
@@ -83,11 +83,11 @@ const showSight = (sight: Sight): string => {
 
 export const show = (siliTime: SiliTime): string => {
   const { sight, seg, segen, seget } = siliTime
-  return F.pipe(
+  return pipe(
     [seg, segen, seget],
-    A.map(pad),
-    A.prepend(showSight(sight)),
-    A.intercalate(S.Monoid)(":"),
+    Array.map(pad),
+    Array.prepend(showSight(sight)),
+    Array.join(":"),
   )
 }
 

@@ -1,4 +1,4 @@
-import { S } from "../fpts"
+import { String as EString } from "effect"
 
 // DaySeconds
 // number of seconds since localized midnight
@@ -42,7 +42,7 @@ export const dayTimeStringToSeconds = (
   timeString: DayTimeString,
 ): DaySeconds => {
   const regex = new RegExp(/:| /)
-  const [hour, minute, second, meridian] = S.split(regex)(timeString)
+  const [hour, minute, second, meridian] = EString.split(regex)(timeString)
 
   const milHour = militaryHour(meridian as Meridian, hour as DayHour)
 

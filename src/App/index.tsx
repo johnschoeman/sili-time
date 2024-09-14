@@ -1,40 +1,47 @@
-import { F, O, T, TE } from "@app/fpts"
+import { fetchSunriseSunset } from "@app/api/sunriseSunset"
 import { Coord, Posix, SiliTime, SunData } from "@app/model"
 
+import { Effect, Option, pipe } from "effect"
 import { createSignal, JSX } from "solid-js"
 
 const POLL_INTERVAL = 100
 
 const [now, setNow] = createSignal<Posix.Posix>(Date.now())
 const [locationPermission, setLocationPermission] = createSignal<
-  O.Option<PermissionState>
->(O.none)
-const [location, setLocation] = createSignal<O.Option<Coord.Coord>>(O.none)
-const [sunData, setSunData] = createSignal<O.Option<SunData.SunData>>(O.none)
-const [displayError, setDisplayError] = createSignal<O.Option<Error>>(O.none)
+  Option.Option<PermissionState>
+>(Option.none())
+const [location, setLocation] = createSignal<Option.Option<Coord.Coord>>(
+  Option.none(),
+)
+const [sunData, setSunData] = createSignal<Option.Option<SunData.SunData>>(
+  Option.none(),
+)
+const [displayError, setDisplayError] = createSignal<Option.Option<Error>>(
+  Option.none(),
+)
 
-const pemissionStatusTask: T.Task<PermissionStatus> = async () => {
-  try {
-    const state = await navigator.permissions.query({ name: "geolocation" })
-    return state
-  } catch (err) {
-    return "denied" as unknown as PermissionStatus
-  }
-}
+// const pemissionStatusTask: T.Task<PermissionStatus> = async () => {
+//   try {
+//     const state = await navigator.permissions.query({ name: "geolocation" })
+//     return state
+//   } catch (err) {
+//     return "denied" as unknown as PermissionStatus
+//   }
+// }
 
-  //  setLocationPermission(O.some(result.state))
-  //  switch (result.state) {
-  //    case "granted":
-  //    case "prompt":
-  //      void getLocation()
-  //      break
-  //    case "denied":
-  //      break
-  //  }
-  //  result.addEventListener("change", () => {
-  //    report(result.state)
-  //  })
-  //})
+//  setLocationPermission(O.some(result.state))
+//  switch (result.state) {
+//    case "granted":
+//    case "prompt":
+//      void getLocation()
+//      break
+//    case "denied":
+//      break
+//  }
+//  result.addEventListener("change", () => {
+//    report(result.state)
+//  })
+// })
 
 const report = (state: string): void => {
   console.log(`Permission ${state}`)
@@ -46,27 +53,25 @@ const getLocation = async (): Promise<void> => {
       const coord: Coord.Coord = [latitude, longitude]
 
       setLocation(() => {
-        return O.some(coord)
+        return Option.some(coord)
       })
 
-      void F.pipe(
+      const getSunData = pipe(
         coord,
-        SunData.fetchSunriseSunset,
-        TE.foldW(
-          error => {
-            return T.fromIO(() => {
-              console.log("PING", error)
-              setDisplayError(O.some(error))
-            })
+        fetchSunriseSunset,
+        Effect.match({
+          onFailure: error => {
+            console.log("PING", error)
+            setDisplayError(Option.some(error))
           },
-          res => {
-            const utcOffsetSec = new Date(now()).getTimezoneOffset() * 60
-            console.log(res)
-            const sunData_ = SunData.toSunData(res, utcOffsetSec)
-            return T.fromIO(() => setSunData(O.some(sunData_)))
+          onSuccess: sunData_ => {
+            console.log(sunData_)
+            setSunData(Option.some(sunData_))
           },
-        ),
-      )()
+        }),
+      )
+
+      void Effect.runPromise(getSunData)
     },
   )
 }
@@ -83,13 +88,10 @@ setInterval(() => {
 }, POLL_INTERVAL)
 
 const nowText = (): string => {
-  return F.pipe(now(), now_ => String(now_).slice(0, 10))
+  return pipe(now(), now_ => String(now_).slice(0, 10))
 }
 const locationText = (): string =>
-  F.pipe(
-    location(),
-    O.fold(() => "...", Coord.show),
-  )
+  pipe(location(), Option.match({ onNone: () => "...", onSome: Coord.show }))
 
 const legsAnHourText = (sunData_: SunData.SunData): string => {
   const legAnHour = 1 / SiliTime.legAnHour(sunData_)
@@ -102,7 +104,7 @@ const negsAnHourText = (sunData_: SunData.SunData): string => {
 }
 
 const siliTime = (sunData_: SunData.SunData): SiliTime.SiliTime => {
-  return F.pipe(
+  return pipe(
     now(),
     Posix.toDaySecond,
     SiliTime.fromDaySeconds(sunData_),
@@ -111,11 +113,11 @@ const siliTime = (sunData_: SunData.SunData): SiliTime.SiliTime => {
 }
 
 const siliTimeText = (sunData_: SunData.SunData): string => {
-  return F.pipe(sunData_, siliTime, SiliTime.show)
+  return pipe(sunData_, siliTime, SiliTime.show)
 }
 
 const percentCompletedText = (sunData_: SunData.SunData): string => {
-  return F.pipe(
+  return pipe(
     sunData_,
     siliTime,
     SiliTime.percentCompleted,
@@ -125,13 +127,14 @@ const percentCompletedText = (sunData_: SunData.SunData): string => {
 }
 
 const displayErrorText = (): string =>
-  F.pipe(
-    displayError(),
-    O.fold(() => "", showError),
-  )
+  pipe(displayError(), Option.match({ onNone: () => "", onSome: showError }))
 
 const hasError = (): boolean =>
-  F.pipe(displayError(), O.map(F.constTrue), O.getOrElse(F.constFalse))
+  pipe(
+    displayError(),
+    Option.map(() => true),
+    Option.getOrElse(() => false),
+  )
 
 type SiliTimeFooProps = SunData.SunData
 const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
@@ -159,9 +162,9 @@ const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
 const App = (): JSX.Element => {
   return (
     <div class="p-8 space-y-4">
-      {F.pipe(
+      {pipe(
         sunData(),
-        O.fold(() => <p>Loading</p>, SiliTimeFoo),
+        Option.match({ onNone: () => <p>Loading</p>, onSome: SiliTimeFoo }),
       )}
       <div>
         <p>Date Time • {Posix.toDate(now())}</p>
