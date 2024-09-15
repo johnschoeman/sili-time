@@ -23,61 +23,58 @@ type FooterProps = {
 }
 const Footer = ({ now, location, sunData }: FooterProps): JSX.Element => {
   return (
-    <div class="p-4 w-full border-t border-gray-400">
-    <div class="grid gap-y-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+    <div class="p-4 w-full border-t bdr-gray-400">
+      <div class="grid gap-y-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+        <div>
+          <label>train time</label>
+          <p class="font-semibold">{Posix.toDate(now())}</p>
+        </div>
 
-      <div>
-        <label>train time</label>
-        <p class="font-semibold">{Posix.toDate(now())}</p>
-      </div>
+        <div>
+          <label>epoch</label>
+          <p class="font-semibold">{nowText(now)}</p>
+        </div>
 
-      <div>
-        <label>epoch</label>
-        <p class="font-semibold">{nowText(now)}</p>
-      </div>
+        {pipe(
+          location(),
+          Option.match({
+            onNone: () => "...",
+            onSome: ([lat, lng]) => {
+              return (
+                <>
+                  <div class="">
+                    <label>Latitude</label>
+                    <p class="font-semibold">{lat}</p>
+                  </div>
+                  <div class="">
+                    <label>Longitude</label>
+                    <p class="font-semibold">{lng}</p>
+                  </div>
+                </>
+              )
+            },
+          }),
+        )}
 
-      {pipe(
-        location(),
-        Option.match({
-          onNone: () => "...",
-          onSome: ([lat, lng]) => {
-            return (
-              <>
-                <div class="">
-                  <label>Latitude</label>
-                  <p class="font-semibold">{lat}</p>
-                </div>
-                <div class="">
-                  <label>Longitude</label>
-                  <p class="font-semibold">{lng}</p>
-                </div>
-              </>
-            )
-          },
-        }),
-      )}
+        <div>
+          <label>Sunrise (train)</label>
+          <p class="font-semibold">{SunData.showSunrise(sunData)}</p>
+        </div>
 
-      <div>
-        <label>Sunrise (train)</label>
-        <p class="font-semibold">{SunData.showSunrise(sunData)}</p>
-      </div>
+        <div>
+          <label>Sunset (train)</label>
+          <p class="font-semibold">{SunData.showSunset(sunData)}</p>
+        </div>
 
-      <div>
-        <label>Sunset (train)</label>
-        <p class="font-semibold">{SunData.showSunset(sunData)}</p>
-      </div>
+        <div>
+          <label>Hours / Leg</label>
+          <p class="font-semibold">{legsAnHourText(sunData)}</p>
+        </div>
 
-      <div>
-        <label>Hours / Leg</label>
-        <p class="font-semibold">{legsAnHourText(sunData)}</p>
-      </div>
-
-      <div>
-        <label>Hours / Neg</label>
-        <p class="font-semibold">{negsAnHourText(sunData)}</p>
-      </div>
-
-
+        <div>
+          <label>Hours / Neg</label>
+          <p class="font-semibold">{negsAnHourText(sunData)}</p>
+        </div>
       </div>
     </div>
   )

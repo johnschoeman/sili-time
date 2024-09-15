@@ -89,7 +89,7 @@ setInterval(() => {
 
 const App = (): JSX.Element => {
   return (
-    <div class="space-y-4 h-screen flex flex-col justify-between border">
+    <div class="bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between border">
       <Header />
 
       <div class="h-full flex flex-col">

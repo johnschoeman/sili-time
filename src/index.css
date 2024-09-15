@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .txt-gray-900 {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+
+  .txt-gray-800 {
+    @apply text-gray-800 dark:text-gray-200;
+  }
+
+  .bkg-white {
+    @apply bg-white dark:bg-black;
+  }
+
+  .bdr-gray-400 {
+    @apply border-gray-400 dark:border-gray-600;
+  }
+}

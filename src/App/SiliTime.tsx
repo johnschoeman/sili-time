@@ -61,9 +61,11 @@ const SiliTimeView = ({
   return (
     <div class="flex">
       <div>
-        <h1 class="text-5xl md:text-7xl lg:text-9xl font-black mb-2">{siliTimeText(sunData, now)}</h1>
+        <h1 class="text-5xl md:text-7xl lg:text-9xl font-black mb-2">
+          {siliTimeText(sunData, now)}
+        </h1>
         <div class="flex justify-end">
-          <p class="font-bold text-gray-800">
+          <p class="font-bold txt-gray-800">
             {percentCompletedText(sunData, now)}
           </p>
         </div>
