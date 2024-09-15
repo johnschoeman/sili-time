@@ -1,6 +1,6 @@
 import { fetchSunriseSunset } from "@app/api/sunriseSunset"
-import { Coord, Posix, SunData } from "@app/model"
-import { ThemeState } from "@app/state"
+import { Coord, Posix } from "@app/model"
+import { SunDataState, ThemeState } from "@app/state"
 
 import Footer from "./Footer"
 import Header from "./Header"
@@ -14,15 +14,12 @@ const POLL_INTERVAL = 100
 const [now, setNow] = createSignal<Posix.Posix>(Date.now())
 
 // const [locationPermission, setLocationPermission] = createSignal<
-  // Option.Option<PermissionState>
+// Option.Option<PermissionState>
 // >(Option.none())
 const [location, setLocation] = createSignal<Option.Option<Coord.Coord>>(
   Option.none(),
 )
 
-const [sunData, setSunData] = createSignal<Option.Option<SunData.SunData>>(
-  Option.none(),
-)
 const [displayError, setDisplayError] = createSignal<Option.Option<Error>>(
   Option.none(),
 )
@@ -73,7 +70,7 @@ const getLocation = async (): Promise<void> => {
           },
           onSuccess: sunData_ => {
             console.log(sunData_)
-            setSunData(Option.some(sunData_))
+            SunDataState.setSunData(Option.some(sunData_))
           },
         }),
       )
@@ -96,9 +93,9 @@ const App = (): JSX.Element => {
       <div class="bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between">
         <Header />
 
-        <div class="h-full flex flex-col">
+        <div class="h-full">
           {pipe(
-            sunData(),
+            SunDataState.sunData(),
             Option.match({
               onNone: () => <p>Loading</p>,
               onSome: sunData_ => {
@@ -113,14 +110,14 @@ const App = (): JSX.Element => {
                         />
                       </div>
                     </div>
-
-                    <Footer now={now} location={location} sunData={sunData_} />
                   </div>
                 )
               },
             }),
           )}
         </div>
+
+        <Footer now={now} location={location} />
       </div>
     </div>
   )

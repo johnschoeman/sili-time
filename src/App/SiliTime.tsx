@@ -1,6 +1,6 @@
 import { Posix, SiliTime, SunData } from "@app/model"
 
-import { Option,pipe } from "effect"
+import { Option, pipe } from "effect"
 import { Accessor, JSX } from "solid-js"
 
 const siliTimeText = (

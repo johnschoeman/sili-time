@@ -3,8 +3,8 @@ import { ThemeState } from "@app/state"
 
 import { pipe } from "effect"
 import { Icon } from "solid-heroicons"
-import { moon as moonOutline,sun as sunOutline } from "solid-heroicons/outline"
-import { moon as moonSolid,sun as sunSolid } from "solid-heroicons/solid"
+import { moon as moonOutline, sun as sunOutline } from "solid-heroicons/outline"
+import { moon as moonSolid, sun as sunSolid } from "solid-heroicons/solid"
 import { JSX } from "solid-js"
 
 const Header = (): JSX.Element => {

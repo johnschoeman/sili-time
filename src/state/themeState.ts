@@ -5,13 +5,13 @@ import { createSignal } from "solid-js"
 
 const determineSystemTheme = (): Theme.Theme => {
   if (!window.matchMedia) {
-    return 'Light';
+    return "Light"
   }
 
-  if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-    return 'Dark';
+  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    return "Dark"
   } else {
-    return 'Light';
+    return "Light"
   }
 }
 

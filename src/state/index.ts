@@ -1,3 +1,4 @@
+import * as SunDataState from "./sunDataState"
 import * as ThemeState from "./themeState"
 
-export { ThemeState }
+export { SunDataState, ThemeState }
