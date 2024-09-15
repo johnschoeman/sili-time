@@ -1,7 +1,7 @@
 import { Posix, SiliTime, SunData } from "@app/model"
 import { SunDataState } from "@app/state"
 
-import { Option, pipe } from "effect"
+import { Option, pipe, String } from "effect"
 import { Accessor, JSX } from "solid-js"
 
 const siliTimeText = (
@@ -18,7 +18,9 @@ const percentCompletedText = (
   return pipe(
     siliTime(sunData_, now),
     SiliTime.percentCompleted,
-    c => String(c * 100).slice(0, 5),
+    c => `${c * 100}`,
+    String.padEnd(5, "0"),
+    String.takeLeft(5),
     v => `${v}%`,
   )
 }
