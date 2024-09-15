@@ -60,7 +60,7 @@ const SiliTimeView = ({
   displayError,
 }: SiliTimeViewProps): JSX.Element => {
   return (
-    <div class="h-full">
+    <div class="font-mono h-full">
       <div class="px-4 h-full flex flex-col justify-center items-center">
         <div>
           <div class="text-5xl md:text-7xl lg:text-9xl font-black mb-2">

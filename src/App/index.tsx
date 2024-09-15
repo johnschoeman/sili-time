@@ -90,7 +90,7 @@ setInterval(() => {
 const App = (): JSX.Element => {
   return (
     <div class={ThemeState.getStyle()}>
-      <div class="bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between">
+      <div class="font-sans bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between">
         <Header />
 
         <SiliTimeView now={now} displayError={displayError()} />
