@@ -1,5 +1,5 @@
 import { Posix, SiliTime, SunData } from "@app/model"
-import { SunDataState } from "@app/state"
+import { LocationState, NowState, SunDataState } from "@app/state"
 
 import { Option, pipe, String } from "effect"
 import { Accessor, JSX } from "solid-js"
@@ -51,14 +51,7 @@ const siliTime = (
   )
 }
 
-type SiliTimeViewProps = {
-  now: Accessor<Posix.Posix>
-  displayError: Option.Option<Error>
-}
-const SiliTimeView = ({
-  now,
-  displayError,
-}: SiliTimeViewProps): JSX.Element => {
+const SiliTimeView = (): JSX.Element => {
   return (
     <div class="font-mono h-full">
       <div class="px-4 h-full flex flex-col justify-center items-center">
@@ -67,7 +60,9 @@ const SiliTimeView = ({
             {pipe(
               SunDataState.sunData(),
               Option.map(sunData_ => (
-                <p class="txt-gray-900">{siliTimeText(sunData_, now)}</p>
+                <p class="txt-gray-900">
+                  {siliTimeText(sunData_, NowState.now)}
+                </p>
               )),
               Option.getOrElse(() => (
                 <p class="txt-gray-400 animate-pulse">L:00:00:00</p>
@@ -81,7 +76,7 @@ const SiliTimeView = ({
                 SunDataState.sunData(),
                 Option.map(sunData_ => (
                   <p class="txt-gray-800">
-                    {percentCompletedText(sunData_, now)}
+                    {percentCompletedText(sunData_, NowState.now)}
                   </p>
                 )),
                 Option.getOrElse(() => (
@@ -93,7 +88,9 @@ const SiliTimeView = ({
         </div>
       </div>
 
-      {hasError(displayError) && <p>{displayErrorText(displayError)}</p>}
+      {hasError(LocationState.displayError()) && (
+        <p>{displayErrorText(LocationState.displayError())}</p>
+      )}
     </div>
   )
 }

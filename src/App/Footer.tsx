@@ -1,5 +1,5 @@
 import { Coord, Posix, SiliTime, SunData } from "@app/model"
-import { SunDataState } from "@app/state"
+import { LocationState, NowState, SunDataState } from "@app/state"
 
 import { Option, pipe } from "effect"
 import { Accessor, JSX } from "solid-js"
@@ -71,35 +71,31 @@ const OptionDataItem = <T extends unknown>({
   )
 }
 
-type FooterProps = {
-  now: Accessor<Posix.Posix>
-  location: Accessor<Option.Option<Coord.Coord>>
-}
-const Footer = ({ now, location }: FooterProps): JSX.Element => {
+const Footer = (): JSX.Element => {
   return (
     <div class="p-4 w-full border-t bdr-gray-400">
       <div class="grid gap-y-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
         <DataItem
           labelText="train time"
-          dataAccessor={now}
+          dataAccessor={NowState.now}
           dataToText={nowToTrainTimeText}
         />
 
         <DataItem
           labelText="epoch"
-          dataAccessor={now}
+          dataAccessor={NowState.now}
           dataToText={nowToEpochText}
         />
 
         <OptionDataItem
           labelText="Latitude"
-          dataAccessor={location}
+          dataAccessor={LocationState.location}
           dataToText={Coord.showLat}
         />
 
         <OptionDataItem
           labelText="Longitude"
-          dataAccessor={location}
+          dataAccessor={LocationState.location}
           dataToText={Coord.showLng}
         />
 
