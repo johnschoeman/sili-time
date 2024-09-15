@@ -1,9 +1,9 @@
-import { pipe, Effect, Option } from "effect"
-import { createSignal } from "solid-js"
-
 import { fetchSunriseSunset } from "@app/api/sunriseSunset"
 import { Coord } from "@app/model"
 import { SunDataState } from "@app/state"
+
+import { Effect, Option,pipe } from "effect"
+import { createSignal } from "solid-js"
 
 type LocationState = Option.Option<Coord.Coord>
 const initialState: LocationState = Option.none()

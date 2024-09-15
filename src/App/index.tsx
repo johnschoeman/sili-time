@@ -1,11 +1,11 @@
-import cn from "classnames"
-import { JSX } from "solid-js"
-
 import { LocationState, NowState, ThemeState } from "@app/state"
 
 import Footer from "./Footer"
 import Header from "./Header"
 import SiliTimeView from "./SiliTime"
+
+import cn from "classnames"
+import { JSX } from "solid-js"
 
 void NowState.startNowInterval()
 void LocationState.getLocation()

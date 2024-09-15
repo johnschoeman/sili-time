@@ -1,6 +1,6 @@
-import { createSignal } from "solid-js"
-
 import { Posix } from "@app/model"
+
+import { createSignal } from "solid-js"
 
 const POLL_INTERVAL = 100
 
