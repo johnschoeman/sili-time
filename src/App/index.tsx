@@ -93,29 +93,7 @@ const App = (): JSX.Element => {
       <div class="bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between">
         <Header />
 
-        <div class="h-full">
-          {pipe(
-            SunDataState.sunData(),
-            Option.match({
-              onNone: () => <p>Loading</p>,
-              onSome: sunData_ => {
-                return (
-                  <div class="flex flex-col h-full">
-                    <div class="flex flex-col h-full">
-                      <div class="px-4 h-full flex flex-col justify-center items-center">
-                        <SiliTimeView
-                          sunData={sunData_}
-                          now={now}
-                          displayError={displayError()}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )
-              },
-            }),
-          )}
-        </div>
+        <SiliTimeView now={now} displayError={displayError()} />
 
         <Footer now={now} location={location} />
       </div>

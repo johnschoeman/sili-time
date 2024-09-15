@@ -1,4 +1,5 @@
 import { Posix, SiliTime, SunData } from "@app/model"
+import { SunDataState } from "@app/state"
 
 import { Option, pipe } from "effect"
 import { Accessor, JSX } from "solid-js"
@@ -17,7 +18,7 @@ const percentCompletedText = (
   return pipe(
     siliTime(sunData_, now),
     SiliTime.percentCompleted,
-    c => String(c * 100).slice(0, 4),
+    c => String(c * 100).slice(0, 5),
     v => `${v}%`,
   )
 }
@@ -49,25 +50,44 @@ const siliTime = (
 }
 
 type SiliTimeViewProps = {
-  sunData: SunData.SunData
   now: Accessor<Posix.Posix>
   displayError: Option.Option<Error>
 }
 const SiliTimeView = ({
-  sunData,
   now,
   displayError,
 }: SiliTimeViewProps): JSX.Element => {
   return (
-    <div class="flex">
-      <div>
-        <h1 class="text-5xl md:text-7xl lg:text-9xl font-black mb-2">
-          {siliTimeText(sunData, now)}
-        </h1>
-        <div class="flex justify-end">
-          <p class="font-bold txt-gray-800">
-            {percentCompletedText(sunData, now)}
-          </p>
+    <div class="h-full">
+      <div class="px-4 h-full flex flex-col justify-center items-center">
+        <div>
+          <div class="text-5xl md:text-7xl lg:text-9xl font-black mb-2">
+            {pipe(
+              SunDataState.sunData(),
+              Option.map(sunData_ => (
+                <p class="txt-gray-900">{siliTimeText(sunData_, now)}</p>
+              )),
+              Option.getOrElse(() => (
+                <p class="txt-gray-400 animate-pulse">L:00:00:00</p>
+              )),
+            )}
+          </div>
+
+          <div class="flex justify-end">
+            <p class="font-bold txt-gray-800 text-lg md:text-2xl lg:text-4xl">
+              {pipe(
+                SunDataState.sunData(),
+                Option.map(sunData_ => (
+                  <p class="txt-gray-800">
+                    {percentCompletedText(sunData_, now)}
+                  </p>
+                )),
+                Option.getOrElse(() => (
+                  <p class="txt-gray-400 animate-pulse">00.00%</p>
+                )),
+              )}
+            </p>
+          </div>
         </div>
       </div>
 
