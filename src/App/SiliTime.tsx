@@ -1,7 +1,7 @@
-import { Accessor, JSX } from "solid-js"
-import { pipe, Option } from "effect"
+import { Posix, SiliTime, SunData } from "@app/model"
 
-import { Coord, Posix, SiliTime, SunData } from "@app/model"
+import { Option,pipe } from "effect"
+import { Accessor, JSX } from "solid-js"
 
 const siliTimeText = (
   sunData_: SunData.SunData,

@@ -1,22 +1,25 @@
 import { fetchSunriseSunset } from "@app/api/sunriseSunset"
-import { Coord, Posix, SiliTime, SunData } from "@app/model"
+import { Coord, Posix, SunData } from "@app/model"
+import { ThemeState } from "@app/state"
+
+import Footer from "./Footer"
+import Header from "./Header"
+import SiliTimeView from "./SiliTime"
 
 import { Effect, Option, pipe } from "effect"
 import { createSignal, JSX } from "solid-js"
 
-import Header from "./Header"
-import Footer from "./Footer"
-import SiliTimeView from "./SiliTime"
-
 const POLL_INTERVAL = 100
 
 const [now, setNow] = createSignal<Posix.Posix>(Date.now())
-const [locationPermission, setLocationPermission] = createSignal<
-  Option.Option<PermissionState>
->(Option.none())
+
+// const [locationPermission, setLocationPermission] = createSignal<
+  // Option.Option<PermissionState>
+// >(Option.none())
 const [location, setLocation] = createSignal<Option.Option<Coord.Coord>>(
   Option.none(),
 )
+
 const [sunData, setSunData] = createSignal<Option.Option<SunData.SunData>>(
   Option.none(),
 )
@@ -47,9 +50,9 @@ const [displayError, setDisplayError] = createSignal<Option.Option<Error>>(
 //  })
 // })
 
-const report = (state: string): void => {
-  console.log(`Permission ${state}`)
-}
+// const report = (state: string): void => {
+//   console.log(`Permission ${state}`)
+// }
 
 const getLocation = async (): Promise<void> => {
   navigator.geolocation.getCurrentPosition(
@@ -89,33 +92,35 @@ setInterval(() => {
 
 const App = (): JSX.Element => {
   return (
-    <div class="bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between border">
-      <Header />
+    <div class={ThemeState.getStyle()}>
+      <div class="bkg-white txt-gray-900 space-y-4 h-screen flex flex-col justify-between">
+        <Header />
 
-      <div class="h-full flex flex-col">
-        {pipe(
-          sunData(),
-          Option.match({
-            onNone: () => <p>Loading</p>,
-            onSome: sunData_ => {
-              return (
-                <div class="flex flex-col h-full">
+        <div class="h-full flex flex-col">
+          {pipe(
+            sunData(),
+            Option.match({
+              onNone: () => <p>Loading</p>,
+              onSome: sunData_ => {
+                return (
                   <div class="flex flex-col h-full">
-                    <div class="px-4 h-full flex flex-col justify-center items-center">
-                      <SiliTimeView
-                        sunData={sunData_}
-                        now={now}
-                        displayError={displayError()}
-                      />
+                    <div class="flex flex-col h-full">
+                      <div class="px-4 h-full flex flex-col justify-center items-center">
+                        <SiliTimeView
+                          sunData={sunData_}
+                          now={now}
+                          displayError={displayError()}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <Footer now={now} location={location} sunData={sunData_} />
-                </div>
-              )
-            },
-          }),
-        )}
+                    <Footer now={now} location={location} sunData={sunData_} />
+                  </div>
+                )
+              },
+            }),
+          )}
+        </div>
       </div>
     </div>
   )

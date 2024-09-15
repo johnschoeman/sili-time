@@ -11,6 +11,14 @@
     @apply text-gray-800 dark:text-gray-200;
   }
 
+  .txt-gray-400 {
+    @apply text-gray-400 dark:text-gray-600;
+  }
+
+  .txt-gray-200 {
+    @apply text-gray-200 dark:text-gray-800;
+  }
+
   .bkg-white {
     @apply bg-white dark:bg-black;
   }

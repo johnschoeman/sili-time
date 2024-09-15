@@ -1,7 +1,7 @@
-import { Accessor, JSX } from "solid-js"
-import { pipe, Option } from "effect"
-
 import { Coord, Posix, SiliTime, SunData } from "@app/model"
+
+import { Option,pipe } from "effect"
+import { Accessor, JSX } from "solid-js"
 
 const nowText = (now: Accessor<Posix.Posix>): string => {
   return pipe(now(), now_ => String(now_).slice(0, 10))
