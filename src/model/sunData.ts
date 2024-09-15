@@ -15,3 +15,15 @@ export const show = (sunData: SunData): string => {
     sunsetDayTime,
   )}`
 }
+
+export const showSunrise = (sunData: SunData): string => {
+  const { sunriseSec } = sunData
+  const sunriseDayTime = DayTime.fromSeconds(sunriseSec)
+  return DayTime.show(sunriseDayTime)
+}
+
+export const showSunset = (sunData: SunData): string => {
+  const { sunsetSec } = sunData
+  const sunsetDayTime = DayTime.fromSeconds(sunsetSec)
+  return DayTime.show(sunsetDayTime)
+}

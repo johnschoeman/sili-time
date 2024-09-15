@@ -4,6 +4,10 @@ import { Coord, Posix, SiliTime, SunData } from "@app/model"
 import { Effect, Option, pipe } from "effect"
 import { createSignal, JSX } from "solid-js"
 
+import Header from "./Header"
+import Footer from "./Footer"
+import SiliTimeView from "./SiliTime"
+
 const POLL_INTERVAL = 100
 
 const [now, setNow] = createSignal<Posix.Posix>(Date.now())
@@ -79,97 +83,40 @@ const getLocation = async (): Promise<void> => {
 //void handlePermission()
 void getLocation()
 
-const showError = (error: Error): string => {
-  return `${error}`
-}
-
 setInterval(() => {
   setNow(Date.now())
 }, POLL_INTERVAL)
 
-const nowText = (): string => {
-  return pipe(now(), now_ => String(now_).slice(0, 10))
-}
-const locationText = (): string =>
-  pipe(location(), Option.match({ onNone: () => "...", onSome: Coord.show }))
-
-const legsAnHourText = (sunData_: SunData.SunData): string => {
-  const legAnHour = 1 / SiliTime.legAnHour(sunData_)
-  return String(legAnHour).slice(0, 4)
-}
-
-const negsAnHourText = (sunData_: SunData.SunData): string => {
-  const negAnHour = 1 / SiliTime.negAnHour(sunData_)
-  return String(negAnHour).slice(0, 4)
-}
-
-const siliTime = (sunData_: SunData.SunData): SiliTime.SiliTime => {
-  return pipe(
-    now(),
-    Posix.toDaySecond,
-    SiliTime.fromDaySeconds(sunData_),
-    SiliTime.fromSet,
-  )
-}
-
-const siliTimeText = (sunData_: SunData.SunData): string => {
-  return pipe(sunData_, siliTime, SiliTime.show)
-}
-
-const percentCompletedText = (sunData_: SunData.SunData): string => {
-  return pipe(
-    sunData_,
-    siliTime,
-    SiliTime.percentCompleted,
-    c => String(c * 100).slice(0, 4),
-    v => `${v}%`,
-  )
-}
-
-const displayErrorText = (): string =>
-  pipe(displayError(), Option.match({ onNone: () => "", onSome: showError }))
-
-const hasError = (): boolean =>
-  pipe(
-    displayError(),
-    Option.map(() => true),
-    Option.getOrElse(() => false),
-  )
-
-type SiliTimeFooProps = SunData.SunData
-const SiliTimeFoo = (sunData_: SiliTimeFooProps): JSX.Element => {
-  return (
-    <>
-      <h1 class="text-2xl font-bold mb-2">
-        SILI TIME • {siliTimeText(sunData_)} • {percentCompletedText(sunData_)}
-      </h1>
-      {hasError() && <p>{displayErrorText()}</p>}
-
-      <div>
-        <h2>Location</h2>
-        <p>{locationText()}</p>
-        <p>{SunData.show(sunData_)}</p>
-      </div>
-
-      <div>
-        <p>hours in a Leg: {legsAnHourText(sunData_)}</p>
-        <p>hours in a Neg: {negsAnHourText(sunData_)}</p>
-      </div>
-    </>
-  )
-}
-
 const App = (): JSX.Element => {
   return (
-    <div class="p-8 space-y-4">
-      {pipe(
-        sunData(),
-        Option.match({ onNone: () => <p>Loading</p>, onSome: SiliTimeFoo }),
-      )}
-      <div>
-        <p>Date Time • {Posix.toDate(now())}</p>
+    <div class="space-y-4 h-screen flex flex-col justify-between border">
+      <Header />
+
+      <div class="h-full flex flex-col">
+        {pipe(
+          sunData(),
+          Option.match({
+            onNone: () => <p>Loading</p>,
+            onSome: sunData_ => {
+              return (
+                <div class="flex flex-col h-full">
+                  <div class="flex flex-col h-full">
+                    <div class="px-4 h-full flex flex-col justify-center items-center">
+                      <SiliTimeView
+                        sunData={sunData_}
+                        now={now}
+                        displayError={displayError()}
+                      />
+                    </div>
+                  </div>
+
+                  <Footer now={now} location={location} sunData={sunData_} />
+                </div>
+              )
+            },
+          }),
+        )}
       </div>
-      <p>Posix: {nowText()}</p>
     </div>
   )
 }
