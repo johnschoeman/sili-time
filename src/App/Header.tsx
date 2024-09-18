@@ -1,11 +1,16 @@
+import { Icon } from "solid-heroicons"
+import { JSX } from "solid-js"
+import { A } from "@solidjs/router"
+import {
+  questionMarkCircle,
+  moon as moonOutline,
+  sun as sunOutline,
+} from "solid-heroicons/outline"
+import { moon as moonSolid, sun as sunSolid } from "solid-heroicons/solid"
+import { pipe } from "effect"
+
 import { NumberBase, Theme } from "@app/model"
 import { NumberBaseState, ThemeState } from "@app/state"
-
-import { pipe } from "effect"
-import { Icon } from "solid-heroicons"
-import { moon as moonOutline, sun as sunOutline } from "solid-heroicons/outline"
-import { moon as moonSolid, sun as sunSolid } from "solid-heroicons/solid"
-import { JSX } from "solid-js"
 
 const Header = (): JSX.Element => {
   const handleOnClickToggleTheme = (): void => {
@@ -18,11 +23,21 @@ const Header = (): JSX.Element => {
 
   return (
     <div class="flex flex-row justify-between items-center p-4 w-full border-b bdr-gray-400">
-      <p class="uppercase font-bold text-xl md:text-2xl lg:text-3xl">
-        Sili Time
-      </p>
+      <div class="flex flex-row space-x-4 items-center">
+        <A href="/" class="uppercase font-bold text-xl md:text-2xl lg:text-3xl">
+          Sili Time
+        </A>
 
-      <div class="flex flex-row space-x-4">
+        <A href="/about">
+          <Icon
+            path={questionMarkCircle}
+            class="txt-gray-900"
+            style="width: 28px"
+          />
+        </A>
+      </div>
+
+      <div class="flex flex-row items-center space-x-4">
         <button onClick={handleOnClickToggleNumberBase}>
           {pipe(
             NumberBaseState.numberBase(),

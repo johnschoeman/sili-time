@@ -1,11 +1,11 @@
-import { LocationState, NowState, ThemeState } from "@app/state"
-
-import Footer from "./Footer"
-import Header from "./Header"
-import SiliTimeView from "./SiliTime"
-
 import cn from "classnames"
 import { JSX } from "solid-js"
+import { Router, Route } from "@solidjs/router"
+
+import { LocationState, NowState, ThemeState } from "@app/state"
+
+import SiliTime from "./SiliTime"
+import About from "./About"
 
 void NowState.startNowInterval()
 void LocationState.getLocation()
@@ -18,9 +18,10 @@ const App = (): JSX.Element => {
         ThemeState.getStyle(),
       )}
     >
-      <Header />
-      <SiliTimeView />
-      <Footer />
+      <Router>
+        <Route path="/" component={SiliTime} />
+        <Route path="/about" component={About} />
+      </Router>
     </div>
   )
 }
