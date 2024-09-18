@@ -1,10 +1,9 @@
-import { SunData } from "@app/model"
+import { RemoteData, SunData } from "@app/model"
 
-import { Option } from "effect"
 import { createSignal } from "solid-js"
 
-type SunDataState = Option.Option<SunData.SunData>
+type SunDataState = RemoteData.RemoteData<SunData.SunData, Error>
 
-const initialValue = Option.none()
+const initialValue: SunDataState = RemoteData.NotStarted()
 
 export const [sunData, setSunData] = createSignal<SunDataState>(initialValue)

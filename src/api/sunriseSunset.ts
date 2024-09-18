@@ -79,7 +79,13 @@ export const fetchSunriseSunset = (
   // )
 
   const result = Effect.tryPromise(async () => {
-    return fetch(url).then(async res => res.json())
+    return fetch(url).then(async res => {
+      if (res.ok) {
+        return res.json()
+      } else {
+        throw new Error(`Failed to fetch: ${res.status}`)
+      }
+    })
   }).pipe(
     Effect.map(Schema.decodeUnknownSync(SunResponse)),
     Effect.map(toModel(utcOffsetSec)),

@@ -1,4 +1,4 @@
-import { NumberBase, Posix, SiliTime, SunData } from "@app/model"
+import { NumberBase, Posix, RemoteData, SiliTime, SunData } from "@app/model"
 import {
   LocationState,
   NowState,
@@ -53,12 +53,20 @@ const SiliTimeView = (): JSX.Element => {
           <div class="text-5xl md:text-7xl lg:text-9xl font-black mb-2">
             {pipe(
               SunDataState.sunData(),
-              Option.map(sunData_ => (
-                <p class="txt-gray-900">{siliTimeText(sunData_)}</p>
-              )),
-              Option.getOrElse(() => (
-                <p class="txt-gray-400 animate-pulse">L:00:00:00</p>
-              )),
+              RemoteData.match({
+                onResolved: sunData_ => (
+                  <p class="txt-gray-900">{siliTimeText(sunData_)}</p>
+                ),
+                onNotStarted: () => (
+                  <p class="txt-gray-400 animate-pulse">L:00:00:00</p>
+                ),
+                onInFlight: () => (
+                  <p class="txt-gray-400 animate-pulse">L:00:00:00</p>
+                ),
+                onRequestError: error => (
+                  <p class="txt-gray-400">{`${error}`}</p>
+                ),
+              }),
             )}
           </div>
 
@@ -66,12 +74,20 @@ const SiliTimeView = (): JSX.Element => {
             <p class="font-bold txt-gray-800 text-lg md:text-2xl lg:text-4xl">
               {pipe(
                 SunDataState.sunData(),
-                Option.map(sunData_ => (
-                  <p class="txt-gray-800">{percentCompletedText(sunData_)}</p>
-                )),
-                Option.getOrElse(() => (
-                  <p class="txt-gray-400 animate-pulse">00.00%</p>
-                )),
+                RemoteData.match({
+                  onResolved: sunData_ => (
+                    <p class="txt-gray-900">{percentCompletedText(sunData_)}</p>
+                  ),
+                  onNotStarted: () => (
+                    <p class="txt-gray-400 animate-pulse">00.00%</p>
+                  ),
+                  onInFlight: () => (
+                    <p class="txt-gray-400 animate-pulse">00.00%</p>
+                  ),
+                  onRequestError: error => (
+                    <p class="txt-gray-400">{`${error}`}</p>
+                  ),
+                }),
               )}
             </p>
           </div>

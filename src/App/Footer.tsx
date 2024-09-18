@@ -1,4 +1,4 @@
-import { Coord, Posix, SiliTime, SunData } from "@app/model"
+import { Coord, Posix, RemoteData, SiliTime, SunData } from "@app/model"
 import { LocationState, NowState, SunDataState } from "@app/state"
 
 import { Option, pipe } from "effect"
@@ -48,24 +48,29 @@ const DataItem = <T extends unknown>({
   )
 }
 
-type OptionDataItemProps<T> = {
+type RemoteDataItemProps<T, E> = {
   labelText: string
-  dataAccessor: Accessor<Option.Option<T>>
+  dataAccessor: Accessor<RemoteData.RemoteData<T, E>>
   dataToText: (value: T) => string
 }
-const OptionDataItem = <T extends unknown>({
+const RemoteDataItem = <T extends unknown, E>({
   labelText,
   dataAccessor,
   dataToText,
-}: OptionDataItemProps<T>): JSX.Element => {
+}: RemoteDataItemProps<T, E>): JSX.Element => {
   return (
     <div>
       <label class={labelStyle}>{labelText}</label>
       {pipe(
         dataAccessor(),
-        Option.map(dataToText),
-        Option.map(valueText => <p class={valueStyle}>{valueText}</p>),
-        Option.getOrElse(() => <Loading />),
+        RemoteData.map(dataToText),
+        RemoteData.map(valueText => <p class={valueStyle}>{valueText}</p>),
+        RemoteData.match({
+          onResolved: valueText => <p class={valueStyle}>{valueText}</p>,
+          onNotStarted: () => <p>not started</p>,
+          onInFlight: () => <Loading />,
+          onRequestError: error => <p>{`${error}`}</p>,
+        }),
       )}
     </div>
   )
@@ -87,37 +92,37 @@ const Footer = (): JSX.Element => {
           dataToText={nowToEpochText}
         />
 
-        <OptionDataItem
+        <RemoteDataItem
           labelText="Latitude"
           dataAccessor={LocationState.location}
           dataToText={Coord.showLat}
         />
 
-        <OptionDataItem
+        <RemoteDataItem
           labelText="Longitude"
           dataAccessor={LocationState.location}
           dataToText={Coord.showLng}
         />
 
-        <OptionDataItem
+        <RemoteDataItem
           labelText="Sunrise (train)"
           dataAccessor={SunDataState.sunData}
           dataToText={SunData.showSunrise}
         />
 
-        <OptionDataItem
+        <RemoteDataItem
           labelText="Sunset (train)"
           dataAccessor={SunDataState.sunData}
           dataToText={SunData.showSunset}
         />
 
-        <OptionDataItem
+        <RemoteDataItem
           labelText="Hours / Leg"
           dataAccessor={SunDataState.sunData}
           dataToText={legsAnHourText}
         />
 
-        <OptionDataItem
+        <RemoteDataItem
           labelText="Hours / Neg"
           dataAccessor={SunDataState.sunData}
           dataToText={negsAnHourText}
