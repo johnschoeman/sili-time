@@ -2,6 +2,17 @@ import { pipe, String } from "effect"
 
 export type NumberBase = "Binary" | "Seximal" | "Decimal"
 
+export const toNumber = (base: NumberBase): number => {
+  switch (base) {
+    case "Binary":
+      return 2
+    case "Seximal":
+      return 6
+    case "Decimal":
+      return 10
+  }
+}
+
 export const toggle = (numberBase: NumberBase): NumberBase => {
   switch (numberBase) {
     case "Binary":
@@ -90,4 +101,26 @@ export const showNumberIn =
       case "Decimal":
         return num.toString(10)
     }
+  }
+
+export const toBase =
+  (base: NumberBase) =>
+  (num: number): string => {
+    const baseNumber = toNumber(base)
+    return num.toString(baseNumber)
+  }
+
+// precision is expected in base 10
+export const toPercision =
+  (base: NumberBase) =>
+  (precision: number) =>
+  (num: number): string => {
+    const percisionInBase = pipe(
+      Math.pow(10, precision),
+      toBase(base),
+      String.length,
+      n => n - 1,
+    )
+
+    return pipe(num, toBase(base), String.takeLeft(percisionInBase))
   }

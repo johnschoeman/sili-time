@@ -1,25 +1,43 @@
-import { Coord, Posix, RemoteData, SiliTime, SunData } from "@app/model"
-import { LocationState, NowState, SunDataState } from "@app/state"
+import {
+  Coord,
+  NumberBase,
+  Posix,
+  RemoteData,
+  SiliTime,
+  SunData,
+} from "@app/model"
+import {
+  LocationState,
+  NowState,
+  NumberBaseState,
+  SunDataState,
+} from "@app/state"
 
-import { Option, pipe } from "effect"
+import { pipe, String } from "effect"
 import { Accessor, JSX } from "solid-js"
 
-const nowToEpochText = (now: Posix.Posix): string => {
-  return String(now).slice(0, 10)
-}
+const nowToEpochText =
+  (base: Accessor<NumberBase.NumberBase>) =>
+  (now: Posix.Posix): string => {
+    return pipe(now, NumberBase.toPercision(base())(10))
+  }
 
 const nowToTrainTimeText = (now: Posix.Posix): string => {
   return Posix.toDate(now)
 }
 
-const legsAnHourText = (sunData_: SunData.SunData): string => {
-  const legAnHour = 1 / SiliTime.legAnHour(sunData_)
-  return String(legAnHour).slice(0, 4)
-}
-const negsAnHourText = (sunData_: SunData.SunData): string => {
-  const negAnHour = 1 / SiliTime.negAnHour(sunData_)
-  return String(negAnHour).slice(0, 4)
-}
+const legsAnHourText =
+  (base: Accessor<NumberBase.NumberBase>) =>
+  (sunData_: SunData.SunData): string => {
+    const legAnHour = 1 / SiliTime.legAnHour(sunData_)
+    return pipe(legAnHour, NumberBase.toPercision(base())(4))
+  }
+const negsAnHourText =
+  (base: Accessor<NumberBase.NumberBase>) =>
+  (sunData_: SunData.SunData): string => {
+    const negAnHour = 1 / SiliTime.negAnHour(sunData_)
+    return pipe(negAnHour, NumberBase.toPercision(base())(4))
+  }
 
 const Loading = (): JSX.Element => {
   return <p>...</p>
@@ -77,6 +95,8 @@ const RemoteDataItem = <T extends unknown, E>({
 }
 
 const Footer = (): JSX.Element => {
+  const base = NumberBaseState.numberBase
+
   return (
     <div class="p-4 w-full border-t bdr-gray-400">
       <div class="grid gap-y-2 grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
@@ -89,7 +109,7 @@ const Footer = (): JSX.Element => {
         <DataItem
           labelText="epoch"
           dataAccessor={NowState.now}
-          dataToText={nowToEpochText}
+          dataToText={nowToEpochText(base)}
         />
 
         <RemoteDataItem
@@ -119,13 +139,13 @@ const Footer = (): JSX.Element => {
         <RemoteDataItem
           labelText="Hours / Leg"
           dataAccessor={SunDataState.sunData}
-          dataToText={legsAnHourText}
+          dataToText={legsAnHourText(base)}
         />
 
         <RemoteDataItem
           labelText="Hours / Neg"
           dataAccessor={SunDataState.sunData}
-          dataToText={negsAnHourText}
+          dataToText={negsAnHourText(base)}
         />
       </div>
     </div>
